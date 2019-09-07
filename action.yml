@@ -8,15 +8,16 @@ inputs:
     required: true
   fileLocation:
     description: "Location of file containing lines to regex.
-      Generally this file is the output of a linter."
+      Generally this file is the output of a linter.
+      File location is relative to GITHUB_WORKSPACE."
     required: true
   regex:
-    description: 'Regex that will match against each line of the file.
+    description: "Regex that will match against each line of the file.
       The following named groups should be captured:
-      `filename`, `lineNumber`, `columnNumber`, `errorCode`, `errorDesc`. Example for flake8:
-
-      ^(?<filename>.*?):(?<lineNumber>\\d+):(?<columnNumber>\\d+): (?<errorCode>\\w\\d+) (?<errorDesc>[\\s|\\w]*)'
+      `filename`, `lineNumber`, `columnNumber`, `errorCode`, `errorDesc`.
+      See the default for an example that works for flake8"
     required: true
+    default: '^(?<filename>.*?):(?<lineNumber>\d+):(?<columnNumber>\d+): (?<errorCode>\w\d+) (?<errorDesc>[\s|\w]*)'
 runs:
   using: "node12"
   main: "lib/main.js"
