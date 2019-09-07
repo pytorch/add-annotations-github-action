@@ -8,20 +8,16 @@ const { GITHUB_TOKEN, GITHUB_WORKSPACE } = process.env;
 type Annotation = octokit.ChecksUpdateParamsOutputAnnotations;
 // Regex match each line in the output and turn them into annotations
 function parseOutput(output: string, regex: RegExp): Annotation[] {
-  console.log(output);
   let errors = output.split('\n');
   let annotations: Annotation[] = [];
   for (let i = 0; i < errors.length; i++) {
     let error = errors[i];
-    console.log(error);
     let match = error.match(regex);
-    console.log(match);
     if (match) {
       const groups = match.groups;
       if (!groups) {
         throw "No named capture groups in regex match.";
       }
-      console.log(groups);
       // Chop `./` off the front so that Github will recognize the file path
       const normalized_path = groups.filename.replace('./', '');
       const line = parseInt(groups.lineNumber);
