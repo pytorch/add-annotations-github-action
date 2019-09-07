@@ -1,0 +1,12 @@
+name: 'clang-tidy action'
+description: 'Run clang-tidy and annotate the results'
+author: 'suo'
+inputs:
+  checkName:
+    description: 'The name of the check to add annotations to.
+
+      Generally the same as the job that uses this action'
+    required: true
+runs:
+  using: 'node12'
+  main: 'lib/main.js'
