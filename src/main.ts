@@ -1,43 +1,30 @@
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
 import * as github from '@actions/github';
+import * as fs from 'fs';
 import * as octokit from '@octokit/rest';
 
-const { GITHUB_TOKEN } = process.env;
-
-async function runFlake8() {
-  let myOutput = '';
-  let options = {
-    listeners: {
-      stdout: (data: Buffer) => {
-        myOutput += data.toString();
-      },
-    }
-  };
-  await exec.exec('flake8 --exit-zero', [], options);
-  return myOutput;
-}
+const { GITHUB_TOKEN, GITHUB_WORKSPACE } = process.env;
 
 type Annotation = octokit.ChecksUpdateParamsOutputAnnotations;
-// Regex the output for error lines, then format them in
-function parseFlake8Output(output: string): Annotation[] {
-  // Group 0: whole match
-  // Group 1: filename
-  // Group 2: line number
-  // Group 3: column number
-  // Group 4: error code
-  // Group 5: error description
-  let regex = new RegExp(/^(.*?):(\d+):(\d+): (\w\d+) ([\s|\w]*)/);
+// Regex match each line in the output and turn them into annotations
+function parseOutput(output: string, regex: RegExp): Annotation[] {
   let errors = output.split('\n');
   let annotations: Annotation[] = [];
   for (let i = 0; i < errors.length; i++) {
     let error = errors[i];
     let match = error.match(regex);
+    console.log(regex);
+    console.log(error);
+    console.log(match);
     if (match) {
+      const groups = match.groups;
+      if (!groups) {
+        throw "No named capture groups in regex match.";
+      }
       // Chop `./` off the front so that Github will recognize the file path
-      const normalized_path = match[1].replace('./', '');
-      const line = parseInt(match[2]);
-      const column = parseInt(match[3]);
+      const normalized_path = groups.filename.replace('./', '');
+      const line = parseInt(groups.lineNumber);
+      const column = parseInt(groups.columnNumber);
       const annotation_level = <const> 'failure';
       const annotation = {
         path: normalized_path,
@@ -46,8 +33,9 @@ function parseFlake8Output(output: string): Annotation[] {
         start_column: column,
         end_column: column,
         annotation_level,
-        message: `[${match[4]}] ${match[5]}`,
+        message: `[${groups.errorCode}] ${groups.errorDesc}`,
       };
+      console.log(annotation);
 
       annotations.push(annotation);
     }
@@ -78,8 +66,10 @@ async function createCheck(check_name: string, title: string, annotations: Annot
 
 async function run() {
   try {
-    const flake8Output = await runFlake8();
-    const annotations = parseFlake8Output(flake8Output);
+    const fileLocation = core.getInput('fileLocation');
+    const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${fileLocation}`);
+    const regex = core.getInput('regex');
+    const annotations = parseOutput(output.toString(), RegExp(regex));
     if (annotations.length > 0) {
       console.log(annotations);
       const checkName = core.getInput('checkName');
