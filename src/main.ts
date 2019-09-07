@@ -8,6 +8,7 @@ const { GITHUB_TOKEN, GITHUB_WORKSPACE } = process.env;
 type Annotation = octokit.ChecksUpdateParamsOutputAnnotations;
 // Regex match each line in the output and turn them into annotations
 function parseOutput(output: string, regex: RegExp): Annotation[] {
+  console.log(output);
   let errors = output.split('\n');
   let annotations: Annotation[] = [];
   for (let i = 0; i < errors.length; i++) {
