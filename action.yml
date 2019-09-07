@@ -1,12 +1,22 @@
-name: 'clang-tidy action'
-description: 'Run clang-tidy and annotate the results'
-author: 'suo'
+name: "Add Annotations"
+description: "Given a file and a way to match line, add annotations to a Github check run"
+author: "suo"
 inputs:
   checkName:
-    description: 'The name of the check to add annotations to.
+    description: "The name of the check run to add annotations to.
+      This should be the same as the job that uses this action."
+    required: true
+  fileLocation:
+    description: "Location of file containing lines to regex.
+      Generally this file is the output of a linter."
+    required: true
+  regex:
+    description: 'Regex that will match against each line of the file.
+      The following named groups should be captured:
+      `filename`, `lineNumber`, `columnNumber`, `errorCode`, `errorDesc`. Example for flake8:
 
-      Generally the same as the job that uses this action'
+      ^(?<filename>.*?):(?<lineNumber>\\d+):(?<columnNumber>\\d+): (?<errorCode>\\w\\d+) (?<errorDesc>[\\s|\\w]*)'
     required: true
 runs:
-  using: 'node12'
-  main: 'lib/main.js'
+  using: "node12"
+  main: "lib/main.js"
