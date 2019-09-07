@@ -13,6 +13,9 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
   for (let i = 0; i < errors.length; i++) {
     let error = errors[i];
     let match = error.match(regex);
+    console.log(regex);
+    console.log(error);
+    console.log(match);
     if (match) {
       const groups = match.groups;
       if (!groups) {
@@ -66,7 +69,6 @@ async function run() {
     const fileLocation = core.getInput('fileLocation');
     const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${fileLocation}`);
     const regex = core.getInput('regex');
-    console.log(regex);
     const annotations = parseOutput(output.toString(), RegExp(regex));
     if (annotations.length > 0) {
       console.log(annotations);
