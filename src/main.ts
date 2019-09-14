@@ -67,6 +67,7 @@ async function createCheck(check_name: string, title: string, annotations: Annot
 async function run() {
   try {
     const linterOutputPath = core.getInput('linter_output_path');
+    console.log(`Reading linter output from: ${GITHUB_WORKSPACE}/${linterOutputPath}`)
     const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${linterOutputPath}`);
     const regex = core.getInput('regex');
     const annotations = parseOutput(output.toString(), RegExp(regex));
