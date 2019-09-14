@@ -48,7 +48,7 @@ async function createCheck(check_name: string, title: string, annotations: Annot
   const res = await octokit.checks.listForRef({
     check_name,
     ...github.context.repo,
-    ref: github.context.sha
+    ref: core.getInput('commit_sha')
   });
 
   const check_run_id = res.data.check_runs[0].id;
@@ -73,7 +73,7 @@ async function run() {
     if (annotations.length > 0) {
       console.log(annotations);
       const checkName = core.getInput('checkName');
-      await createCheck(checkName, "flake8 failure", annotations);
+      await createCheck(checkName, 'commit_sha', annotations);
       core.setFailed(`${annotations.length} errors(s) found`);
     }
   }

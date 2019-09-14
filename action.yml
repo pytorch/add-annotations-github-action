@@ -11,6 +11,9 @@ inputs:
       Generally this file is the output of a linter.
       File location is relative to GITHUB_WORKSPACE."
     required: true
+  commit_sha:
+    description: "Commit to attach the check to."
+    required: true
   regex:
     description: "Regex that will match against each line of the file.
       The following named groups should be captured:
