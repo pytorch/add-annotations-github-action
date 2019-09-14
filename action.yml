@@ -2,17 +2,20 @@ name: "Add Annotations"
 description: "Given a file and a way to match line, add annotations to a Github check run"
 author: "suo"
 inputs:
-  checkName:
+  check_name:
     description: "The name of the check run to add annotations to.
       This should be the same as the job that uses this action."
     required: true
-  fileLocation:
+  linter_output_path:
     description: "Location of file containing lines to regex.
       Generally this file is the output of a linter.
       File location is relative to GITHUB_WORKSPACE."
     required: true
   commit_sha:
-    description: "Commit to attach the check to."
+    description: "Commit to attach the check to. If the trigger is `push`,
+      this should just be github.sha. If the trigger is `pull_request`,
+      this should be the tip of the pull request, obtainable by running
+      `git rev-parse ${GITHUB_SHA}^2"
     required: true
   regex:
     description: "Regex that will match against each line of the file.
