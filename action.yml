@@ -15,13 +15,13 @@ inputs:
     description: "Commit to attach the check to. If the trigger is `push`,
       this should just be github.sha. If the trigger is `pull_request`,
       this should be the tip of the pull request, obtainable by running
-      `git rev-parse ${GITHUB_SHA}^2"
+      `git rev-parse ${GITHUB_SHA}^2`"
     required: true
   regex:
     description: "Regex that will match against each line of the file.
       The following named groups should be captured:
       `filename`, `lineNumber`, `columnNumber`, `errorCode`, `errorDesc`.
-      See the default for an example that works for flake8"
+      See the default for an example that works for flake8."
     required: true
     default: '^(?<filename>.*?):(?<lineNumber>\d+):(?<columnNumber>\d+): (?<errorCode>\w\d+) (?<errorDesc>[\s|\w]*)'
 runs:

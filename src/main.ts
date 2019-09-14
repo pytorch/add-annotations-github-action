@@ -13,9 +13,6 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
   for (let i = 0; i < errors.length; i++) {
     let error = errors[i];
     let match = error.match(regex);
-    console.log(regex);
-    console.log(error);
-    console.log(match);
     if (match) {
       const groups = match.groups;
       if (!groups) {
@@ -72,9 +69,15 @@ async function run() {
     const regex = core.getInput('regex');
     const annotations = parseOutput(output.toString(), RegExp(regex));
     if (annotations.length > 0) {
+      console.log("===============================================================")
+      console.log("| LINT FAILURES DETECTED                                      |")
+      console.log("|    You don't need to read this log output.                  |")
+      console.log("|    Check the 'Files changed' tab for in-line annotations!   |")
+      console.log("===============================================================")
+
       console.log(annotations);
       const checkName = core.getInput('check_name');
-      await createCheck(checkName, 'commit_sha', annotations);
+      await createCheck(checkName, 'lint errors detected', annotations);
       core.setFailed(`${annotations.length} errors(s) found`);
     }
   }
