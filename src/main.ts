@@ -66,13 +66,13 @@ async function createCheck(check_name: string, title: string, annotations: Annot
 
 async function run() {
   try {
-    const fileLocation = core.getInput('fileLocation');
-    const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${fileLocation}`);
+    const linterOutputPath = core.getInput('linter_output_path');
+    const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${linterOutputPath}`);
     const regex = core.getInput('regex');
     const annotations = parseOutput(output.toString(), RegExp(regex));
     if (annotations.length > 0) {
       console.log(annotations);
-      const checkName = core.getInput('checkName');
+      const checkName = core.getInput('check_name');
       await createCheck(checkName, 'commit_sha', annotations);
       core.setFailed(`${annotations.length} errors(s) found`);
     }
