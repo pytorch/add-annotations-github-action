@@ -22,7 +22,7 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
       const normalized_path = groups.filename.replace('./', '');
       const line = parseInt(groups.lineNumber);
       const column = parseInt(groups.columnNumber);
-      const annotation_level = <const> 'failure';
+      const annotation_level = <const>'failure';
       const annotation = {
         path: normalized_path,
         start_line: line,
@@ -32,7 +32,6 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
         annotation_level,
         message: `[${groups.errorCode}] ${groups.errorDesc}`,
       };
-      console.log(annotation);
 
       annotations.push(annotation);
     }
@@ -42,15 +41,18 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
 
 async function createCheck(check_name: string, title: string, annotations: Annotation[]) {
   const octokit = new github.GitHub(String(GITHUB_TOKEN));
-  const res = await octokit.checks.listForRef({
+  const req = {
     check_name,
     ...github.context.repo,
     ref: core.getInput('commit_sha')
-  });
+  }
+  console.log(req)
+  const res = await octokit.checks.listForRef(req);
+  console.log(res)
 
   const check_run_id = res.data.check_runs[0].id;
 
-  await octokit.checks.update({
+  const update_req = {
     ...github.context.repo,
     check_run_id,
     output: {
@@ -58,7 +60,10 @@ async function createCheck(check_name: string, title: string, annotations: Annot
       summary: `${annotations.length} errors(s) found`,
       annotations
     }
-  });
+  }
+
+  console.log(update_req)
+  await octokit.checks.update(update_req);
 }
 
 async function run() {
