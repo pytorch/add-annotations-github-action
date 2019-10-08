@@ -42,7 +42,6 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
 async function createCheck(check_name: string, title: string, annotations: Annotation[]) {
   const octokit = new github.GitHub(String(GITHUB_TOKEN));
   const req = {
-    check_name,
     ...github.context.repo,
     ref: core.getInput('commit_sha')
   }
@@ -50,7 +49,7 @@ async function createCheck(check_name: string, title: string, annotations: Annot
   const res = await octokit.checks.listForRef(req);
   console.log(res)
 
-  const check_run_id = res.data.check_runs[0].id;
+  const check_run_id = res.data.check_runs.filter(check => check.name === "flake8-py3")[0].id
 
   const update_req = {
     ...github.context.repo,
