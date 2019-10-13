@@ -49,7 +49,7 @@ async function createCheck(check_name: string, title: string, annotations: Annot
   const res = await octokit.checks.listForRef(req);
   console.log(res)
 
-  const check_run_id = res.data.check_runs.filter(check => check.name === "flake8-py3")[0].id
+  const check_run_id = res.data.check_runs.filter(check => check.name === check_name)[0].id
 
   const update_req = {
     ...github.context.repo,
