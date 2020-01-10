@@ -9,7 +9,6 @@ type Annotation = octokit.ChecksUpdateParamsOutputAnnotations;
 
 function getAnnotationLevel(): string {
     let val: string = core.getInput('annotation_level');
-    console.log("annotation_level = " + val);
     if (!val) {
         return <const>'failure';
     } else {
@@ -33,14 +32,16 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
       const normalized_path = groups.filename.replace('./', '');
       const line = parseInt(groups.lineNumber);
       const column = parseInt(groups.columnNumber);
-      const annotation_level = getAnnotationLevel();
+      const annotation_level = (getAnnotationLevel() == 'warning') ?
+        <const>'warning' :
+        <const>'failure';
       const annotation = {
         path: normalized_path,
         start_line: line,
         end_line: line,
         start_column: column,
         end_column: column,
-        annotation_level,
+        annotation_level: annotation_level,
         message: `[${groups.errorCode}] ${groups.errorDesc}`,
       };
 
