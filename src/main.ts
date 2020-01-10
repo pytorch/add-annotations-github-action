@@ -6,6 +6,17 @@ import * as octokit from '@octokit/rest';
 const { GITHUB_TOKEN, GITHUB_WORKSPACE } = process.env;
 
 type Annotation = octokit.ChecksUpdateParamsOutputAnnotations;
+
+function getAnnotationLevel(): string {
+    let val: string = core.getInput('annotation_level');
+    console.log("annotation_level = " + val);
+    if (!val) {
+        return <const>'failure';
+    } else {
+        return val;
+    }
+}
+
 // Regex match each line in the output and turn them into annotations
 function parseOutput(output: string, regex: RegExp): Annotation[] {
   let errors = output.split('\n');
@@ -22,7 +33,7 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
       const normalized_path = groups.filename.replace('./', '');
       const line = parseInt(groups.lineNumber);
       const column = parseInt(groups.columnNumber);
-      const annotation_level = <const>'failure';
+      const annotation_level = getAnnotationLevel();
       const annotation = {
         path: normalized_path,
         start_line: line,
@@ -74,15 +85,18 @@ async function run() {
     const annotations = parseOutput(output.toString(), RegExp(regex));
     if (annotations.length > 0) {
       console.log("===============================================================")
-      console.log("| LINT FAILURES DETECTED                                      |")
+      console.log("| FAILURES DETECTED                                           |")
       console.log("|    You don't need to read this log output.                  |")
       console.log("|    Check the 'Files changed' tab for in-line annotations!   |")
       console.log("===============================================================")
 
       console.log(annotations);
       const checkName = core.getInput('check_name');
-      await createCheck(checkName, 'lint errors detected', annotations);
-      core.setFailed(`${annotations.length} errors(s) found`);
+      await createCheck(checkName, 'failures detected', annotations);
+      const annotation_level = getAnnotationLevel();
+      if (annotation_level != 'warning') {
+        core.setFailed(`${annotations.length} errors(s) found`);
+      }
     }
   }
   catch (error) {
