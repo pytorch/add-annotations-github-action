@@ -94,10 +94,7 @@ async function run() {
       console.log(annotations);
       const checkName = core.getInput('check_name');
       await createCheck(checkName, 'failures detected', annotations);
-      const annotation_level = getAnnotationLevel();
-      if (annotation_level != 'warning') {
-        core.setFailed(`${annotations.length} errors(s) found`);
-      }
+      console.log(`${annotations.length} errors(s) found`);
     }
   }
   catch (error) {
