@@ -1,0 +1,29 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  ci:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15 # to ensure npm 7 with lockfileVersion 2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+      - name: Ensure empty Git status
+        run: |
+          set -eux
+          CHANGES=$(git status --porcelain)
+          echo "$CHANGES"
+          git diff
+          [ -z "$CHANGES" ]
