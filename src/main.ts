@@ -69,7 +69,7 @@ async function createCheck(check_name: string, title: string, annotations: Annot
     output: {
       title,
       summary: `${annotations.length} errors(s) found`,
-      annotations
+      annotations: annotations.slice(0, 50),
     }
   }
 
