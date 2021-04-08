@@ -16,8 +16,33 @@ function getAnnotationLevel(): string {
     }
 }
 
+interface RawAnnotation {
+  filename: string;
+  lineNumber: number;
+  columnNumber: number;
+  errorCode: string;
+  errorDesc: string;
+}
+
+function makeAnnotation(raw: RawAnnotation): Annotation {
+  // Chop `./` off the front so that Github will recognize the file path
+  const normalized_path = raw.filename.replace('./', '');
+  const annotation_level = (getAnnotationLevel() == 'warning') ?
+    <const>'warning' :
+    <const>'failure';
+  return {
+    path: normalized_path,
+    start_line: raw.lineNumber,
+    end_line: raw.lineNumber,
+    start_column: raw.columnNumber,
+    end_column: raw.columnNumber,
+    annotation_level: annotation_level,
+    message: `[${raw.errorCode}] ${raw.errorDesc}`,
+  }
+}
+
 // Regex match each line in the output and turn them into annotations
-function parseOutput(output: string, regex: RegExp): Annotation[] {
+function parseOutputLines(output: string, regex: RegExp): Annotation[] {
   let errors = output.split('\n');
   let annotations: Annotation[] = [];
   for (let i = 0; i < errors.length; i++) {
@@ -28,27 +53,23 @@ function parseOutput(output: string, regex: RegExp): Annotation[] {
       if (!groups) {
         throw "No named capture groups in regex match.";
       }
-      // Chop `./` off the front so that Github will recognize the file path
-      const normalized_path = groups.filename.replace('./', '');
-      const line = parseInt(groups.lineNumber);
-      const column = parseInt(groups.columnNumber);
-      const annotation_level = (getAnnotationLevel() == 'warning') ?
-        <const>'warning' :
-        <const>'failure';
-      const annotation = {
-        path: normalized_path,
-        start_line: line,
-        end_line: line,
-        start_column: column,
-        end_column: column,
-        annotation_level: annotation_level,
-        message: `[${groups.errorCode}] ${groups.errorDesc}`,
-      };
+      const annotation = makeAnnotation({
+        filename: groups.filename,
+        lineNumber: parseInt(groups.lineNumber),
+        columnNumber: parseInt(groups.columnNumber),
+        errorCode: groups.errorCode,
+        errorDesc: groups.errorDesc,
+      });
 
       annotations.push(annotation);
     }
   }
   return annotations;
+}
+
+function parseOutputJSON(output: string): Annotation[] {
+  let raw: RawAnnotation[] = JSON.parse(output);
+  return raw.map(makeAnnotation);
 }
 
 async function createCheck(check_name: string, title: string, annotations: Annotation[]) {
@@ -82,8 +103,16 @@ async function run() {
     const linterOutputPath = core.getInput('linter_output_path');
     console.log(`Reading linter output from: ${GITHUB_WORKSPACE}/${linterOutputPath}`)
     const output = await fs.promises.readFile(`${GITHUB_WORKSPACE}/${linterOutputPath}`);
-    const regex = core.getInput('regex');
-    const annotations = parseOutput(output.toString(), RegExp(regex));
+    const mode = core.getInput('mode');
+    let annotations: Annotation[];
+    if (mode === 'regex') {
+      const regex = core.getInput('regex');
+      annotations = parseOutputLines(output.toString(), RegExp(regex))
+    } else if (mode === 'json') {
+      annotations = parseOutputJSON(output.toString());
+    } else {
+      throw `Mode '${mode}' not recognized.`;
+    }
     if (annotations.length > 0) {
       console.log("===============================================================")
       console.log("| FAILURES DETECTED                                           |")

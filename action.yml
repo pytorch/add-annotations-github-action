@@ -17,6 +17,14 @@ inputs:
       this should be the tip of the pull request, obtainable by running
       `git rev-parse ${GITHUB_SHA}^2`"
     required: true
+  mode:
+    description:
+    required: "Either 'regex' (in which case the linter_output_path file is read
+      line-by-line and the regex input is used) or 'json' (in which case the
+      linter_output_path file is expected to be a JSON file containing a single
+      array of objects, each of which must have the same keys as the capture
+      groups listed in the description of the regex input)."
+    default: regex
   regex:
     description: "Regex that will match against each line of the file.
       The following named groups should be captured:
