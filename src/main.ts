@@ -76,7 +76,8 @@ async function createCheck(check_name: string, title: string, annotations: Annot
   const octokit = new github.GitHub(String(GITHUB_TOKEN));
   const req = {
     ...github.context.repo,
-    ref: core.getInput('commit_sha')
+    ref: core.getInput('commit_sha'),
+    check_name: check_name
   }
   console.log(req)
   const res = await octokit.checks.listForRef(req);
